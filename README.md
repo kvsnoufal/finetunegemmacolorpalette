@@ -5,7 +5,8 @@ A complete end-to-end system that generates color palettes from text description
 See `finetuningdoc.md` for detailed model training details.
 
 > **Demo Video:**  
-> [![Watch the demo](/docs/gemma1.mp4)](/docs/gemma1.mp4)
+
+> [![Watch the demo](/docs/gemma1.gif)](/docs/gemma1.gif)
 
 ## 🎯 Project Overview
 
