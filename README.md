@@ -4,6 +4,8 @@ A complete end-to-end system that generates color palettes from text description
 
 See `finetuningdoc.md` for detailed model training details.
 
+> **Demo Video:**  
+> [![Watch the demo](/docs/gemma1.mp4)](/docs/gemma1.mp4)
 
 ## 🎯 Project Overview
 
@@ -11,7 +13,7 @@ This project implements a sophisticated AI pipeline that:
 
 1. **Generates synthetic color palette datasets** using color theory algorithms
 2. **Labels datasets using GPT-4o** for high-quality theme descriptions
-3. **Fine-tunes a Gemma 270M model** using LoRA (Low-Rank Adaptation) for palette generation
+3. **Fine-tunes a Gemma 270M model** using LoRA (Low-Rank Adaptation) for palette generation in full precision
 4. **Serves the model via FastAPI** for real-time inference
 5. **Provides a Chrome extension** that applies generated themes to any webpage
 

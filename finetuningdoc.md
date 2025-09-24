@@ -66,10 +66,6 @@ def preprocess(row):
     return prompt, json.dumps(cols)
 ```
 
-### 2. Data Split
-- **Training**: All data except last 2 samples
-- **Validation**: Last 2 samples
-- **Format**: List of (prompt, colors) tuples
 
 
 ### Text Processing Flow
