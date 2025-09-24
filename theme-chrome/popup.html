@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Palette Painter</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Palette Painter</h1>
+      <label for="desc">Theme description</label>
+      <textarea id="desc" rows="3" placeholder="e.g., 'muted desert sunset'"></textarea>
+      <button id="generate">Generate & Apply</button>
+      <button id="reset" class="secondary">Reset Page</button>
+
+      <div id="status"></div>
+      <div id="swatches" class="swatches" hidden></div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
