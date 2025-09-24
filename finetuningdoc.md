@@ -3,6 +3,9 @@
 ## Overview
 Fine tuning a  color palette generation model using Google's Gemma-3-270M model with LoRA (Low-Rank Adaptation) in full precision using pytorch native training
 
+Consumes 1GB RAM when serving
+
+
 ## Project Structure
 - **train.py**: Main training script with complete fine-tuning pipeline
 - **explore_model.ipynb**: Interactive notebook for model exploration and tokenization experiments

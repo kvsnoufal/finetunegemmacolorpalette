@@ -1,4 +1,4 @@
-# AI-Powered Theme Generation System
+# Fientuning Gemma 3 270M for Color Theme Generation
 
 A complete end-to-end system that generates color palettes from text descriptions using a fine-tuned Gemma model and applies them to web pages via a Chrome extension.
 
