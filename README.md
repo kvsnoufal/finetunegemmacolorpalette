@@ -2,6 +2,9 @@
 
 A complete end-to-end system that generates color palettes from text descriptions using a fine-tuned Gemma model and applies them to web pages via a Chrome extension.
 
+See `finetuningdoc.md` for detailed model training details.
+
+
 ## 🎯 Project Overview
 
 This project implements a sophisticated AI pipeline that:

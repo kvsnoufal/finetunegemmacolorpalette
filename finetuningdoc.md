@@ -1,7 +1,7 @@
 # Fine-tuning Documentation: Palette Generation Model
 
 ## Overview
-This document details the fine-tuning process for a color palette generation model using Google's Gemma-3-270M model with LoRA (Low-Rank Adaptation) for efficient training.
+Fine tuning a  color palette generation model using Google's Gemma-3-270M model with LoRA (Low-Rank Adaptation) in full precision using pytorch native training
 
 ## Project Structure
 - **train.py**: Main training script with complete fine-tuning pipeline
@@ -31,6 +31,17 @@ peft_config = LoraConfig(
 )
 ```
 
+## Key Insights from explore_model.ipynb
+
+The notebook demonstrates several important concepts:
+
+1. **Tokenizer Exploration**: Shows how the Gemma tokenizer handles special tokens and text encoding
+2. **Model Forward Pass**: Demonstrates the difference between inference (no labels) and training (with labels)
+3. **Label Masking**: Illustrates how -100 labels prevent loss computation on prompt tokens
+4. **Batch Processing**: Shows how custom collation handles variable-length sequences
+5. **Generation**: Demonstrates model inference with temperature and top-p sampling
+
+
 ## Data Processing Pipeline
 
 ### 1. Data Preprocessing
@@ -57,20 +68,6 @@ def preprocess(row):
 - **Validation**: Last 2 samples
 - **Format**: List of (prompt, colors) tuples
 
-## Tokenization Process
-
-### Tokenizer Configuration
-```python
-tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-if tokenizer.pad_token is None:
-    tokenizer.pad_token = tokenizer.eos_token
-```
-
-### Special Tokens
-- **BOS**: `<bos>` (ID: 2) - Beginning of sequence
-- **EOS**: `<eos>` (ID: 1) - End of sequence  
-- **PAD**: `<pad>` (ID: 0) - Padding token
-- **UNK**: `<unk>` (ID: 3) - Unknown token
 
 ### Text Processing Flow
 ```
@@ -110,32 +107,6 @@ The custom collation function handles:
 - **Label Masking**: Only compute loss on color tokens
 - **Attention Masking**: Ignore padding tokens
 
-### Implementation
-```python
-def custom_collate_fn(batch):
-    pad_id = tokenizer.pad_token_id
-    max_len = max(x["input_ids"].size(0) for x in batch)
-    
-    # Initialize tensors
-    input_ids = torch.full((len(batch), max_len), pad_id, dtype=torch.long)
-    attention_mask = torch.zeros((len(batch), max_len), dtype=torch.long)
-    labels = torch.full((len(batch), max_len), -100, dtype=torch.long)
-    
-    for i, item in enumerate(batch):
-        ids = item["input_ids"]
-        mask = item["attention_mask"]
-        L = ids.size(0)
-        
-        # Copy input data
-        input_ids[i, :L] = ids
-        attention_mask[i, :L] = mask
-        
-        # Only color tokens get labels (not -100)
-        split_idx = item["split_idx"]
-        labels[i, split_idx:L] = ids[split_idx:L]
-    
-    return {"input_ids": input_ids, "attention_mask": attention_mask, "labels": labels}
-```
 
 ### Label Masking Strategy
 - **Prompt tokens**: Labels = -100 (ignored in loss)
@@ -221,96 +192,6 @@ Start Training
    Next Batch
 ```
 
-### 1. Forward Pass
-```python
-out = model(**batch)  # input_ids, attention_mask, labels
-loss = out.loss / grad_accum
-```
-
-### 2. Backward Pass
-```python
-loss.backward()
-accum += 1
-```
-
-### 3. Optimization Step
-```python
-if accum % grad_accum == 0:
-    torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-    optimizer.step()
-    scheduler.step()
-    optimizer.zero_grad(set_to_none=True)
-```
-
-### 4. Evaluation
-- **Validation Loss**: Average loss on validation set
-- **Sample Predictions**: Generate color palettes for evaluation
-- **Best Model**: Save model with lowest validation loss
-
-### LoRA Training Architecture
-```
-Base Model (270M params)
-       ↓
-   LoRA Adapters (16 rank)
-       ↓
-   Target Modules:
-   - q_proj, k_proj, v_proj, o_proj
-   - gate_proj, up_proj, down_proj
-       ↓
-   Only ~1% of parameters trained
-       ↓
-   Efficient fine-tuning
-```
-
-## Model Generation
-
-### Inference Configuration
-```python
-model.generate(
-    **inputs,
-    max_new_tokens=64,
-    do_sample=True,
-    temperature=0.2,
-    top_p=0.9,
-    pad_token_id=tokenizer.eos_token_id
-)
-```
-
-### Output Processing
-1. **Decode**: Convert token IDs to text
-2. **Extract**: Use regex to find JSON array: `r"\[.*?\]"`
-3. **Validate**: Ensure proper color format
-
-## Key Features
-
-### 1. LoRA Efficiency
-- **Parameter Reduction**: Only adapts ~1% of model parameters
-- **Memory Efficient**: Reduces GPU memory requirements
-- **Fast Training**: Faster than full fine-tuning
-
-### 2. Selective Training
-- **Prompt Ignored**: Only trains on color generation
-- **Focused Learning**: Model learns color relationships
-- **Reduced Overfitting**: Less risk of catastrophic forgetting
-
-### 3. Robust Evaluation
-- **Multiple Metrics**: Loss, sample quality, validation performance
-- **Checkpoint Management**: Automatic best model selection
-- **TensorBoard Logging**: Visual training progress
-
-## Training Outputs
-
-### Checkpoints
-- **Regular**: Every 200 steps (limited to 2)
-- **Best**: Model with lowest validation loss
-- **Final**: End-of-training model
-
-### Logging
-- **Training Loss**: Scalar values over time
-- **Validation Loss**: Performance on validation set
-- **Sample Predictions**: Generated color palettes
-- **TensorBoard**: Visual training curves
-
 ## Usage Example
 
 ### Training
@@ -356,21 +237,4 @@ Data Preparation
    Inference → Color Palette Generation
 ```
 
-## Key Insights from explore_model.ipynb
 
-The notebook demonstrates several important concepts:
-
-1. **Tokenizer Exploration**: Shows how the Gemma tokenizer handles special tokens and text encoding
-2. **Model Forward Pass**: Demonstrates the difference between inference (no labels) and training (with labels)
-3. **Label Masking**: Illustrates how -100 labels prevent loss computation on prompt tokens
-4. **Batch Processing**: Shows how custom collation handles variable-length sequences
-5. **Generation**: Demonstrates model inference with temperature and top-p sampling
-
-## Training Efficiency
-
-- **Memory Usage**: LoRA reduces memory requirements by ~80%
-- **Training Speed**: 3x faster than full fine-tuning
-- **Parameter Efficiency**: Only 1% of model parameters updated
-- **Quality**: Maintains model performance while specializing for color generation
-
-This fine-tuning approach efficiently adapts a large language model for the specific task of color palette generation while maintaining the model's general capabilities.
