@@ -1,7 +1,7 @@
 # Fine-tuning Documentation: Palette Generation Model
 
 ## Overview
-Fine tuning a  color palette generation model using Google's Gemma-3-270M model with LoRA (Low-Rank Adaptation) in full precision using pytorch native training
+Fine tuning a  color palette generation model using Google's Gemma-3-270M model with LoRA (Low-Rank Adaptation) in full precision using pytorch native training (no huggingface trainer apis)
 
 Consumes 1GB RAM when serving
 

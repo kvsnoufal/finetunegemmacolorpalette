@@ -2,7 +2,8 @@
 
 A complete end-to-end system that generates color palettes from text descriptions using a fine-tuned Gemma model and applies them to web pages via a Chrome extension.
 
-See `finetuningdoc.md` for detailed model training details.
+See [`finetuningdoc.md`](finetuningdoc.md) for detailed model training details.
+
 
 > **Demo Video:**  
 
@@ -10,15 +11,15 @@ See `finetuningdoc.md` for detailed model training details.
 
 ## 🎯 Project Overview
 
-This project implements a sophisticated AI pipeline that:
+This project implements a pipeline that:
 
-1. **Generates synthetic color palette datasets** using color theory algorithms
+1. **Generates synthetic color palette datasets** 
 2. **Labels datasets using GPT-4o** for high-quality theme descriptions
 3. **Fine-tunes a Gemma 270M model** using LoRA (Low-Rank Adaptation) for palette generation in full precision
 4. **Serves the model via FastAPI** for real-time inference
 5. **Provides a Chrome extension** that applies generated themes to any webpage
 
-## 🏗️ System Architecture
+## 🏗️ Steps
 
 ```
 Dataset Generation → GPT-4o Labeling → Model Training → FastAPI Serving → Chrome Extension
@@ -86,6 +87,8 @@ python label_dataset_with_openai.py
 
 ### 3. Model Training
 
+See [`finetuningdoc.md`](finetuningdoc.md) for detailed model training details.
+
 Fine-tune Gemma 270M with LoRA:
 
 ```bash
@@ -105,7 +108,7 @@ python train.py
 - Custom data collator for prompt/response separation
 - TensorBoard logging for monitoring
 - Automatic checkpointing and model selection
-- Gradient clipping and mixed precision support
+- Gradient clipping
 
 ### 4. Model Serving
 
@@ -153,22 +156,7 @@ Load the extension in Chrome:
 
 ## 🔧 Technical Details
 
-### Dataset Generation Algorithm
 
-The system generates color palettes using color theory principles:
-
-```python
-def generate_palette_hex(style="analogous", base_color=(0.5, 0.5, 0.5)):
-    """Generate a 4-color palette using color harmony theory"""
-    r, g, b = base_color
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    
-    if style == "analogous":
-        hues = [(h + (i - 1.5) * 0.1) % 1.0 for i in range(4)]
-    elif style == "complementary":
-        hues = [h, (h + 0.5) % 1.0, (h + 0.1) % 1.0, (h - 0.1) % 1.0]
-    # ... more styles
-```
 
 ### Model Architecture
 
@@ -202,6 +190,7 @@ Response: ["#color1", "#color2", "#color3", "#color4"]
 ```
 
 **Training Features:**
+- **Pytorch native training** - no hf trainer apis
 - **Custom Collator**: Separates prompt from response for targeted learning
 - **Label Masking**: Only response tokens contribute to loss
 - **Gradient Accumulation**: Simulates larger batch sizes
@@ -248,44 +237,8 @@ Response: ["#color1", "#color2", "#color3", "#color4"]
 }
 ```
 
-## 🎨 Color Theory Implementation
-
-The system implements several color harmony algorithms:
-
-### 1. Analogous Colors
-Colors adjacent on the color wheel (e.g., blue, blue-green, green, yellow-green)
-
-### 2. Complementary Colors
-Colors opposite on the color wheel (e.g., red and cyan)
-
-### 3. Triadic Colors
-Three colors evenly spaced on the color wheel (120° apart)
-
-### 4. Monochromatic Colors
-Variations of a single hue with different lightness/saturation
-
-### 5. Pastel & Vibrant Styles
-Specialized palettes for specific aesthetic preferences
-
-## 🔍 Model Performance
-
-**Training Metrics:**
-- **Loss Function**: Cross-entropy on response tokens only
-- **Validation**: Separate validation set for model selection
-- **Monitoring**: TensorBoard integration for real-time metrics
-- **Checkpointing**: Automatic saving of best performing model
-
-**Inference Performance:**
-- **Latency**: ~200-500ms per generation (MPS/CUDA)
-- **Memory**: ~2GB VRAM for inference
-- **Quality**: Coherent 4-color palettes matching descriptions
-
 ## 🛠️ Development & Debugging
 
-### TensorBoard Monitoring
-```bash
-tensorboard --logdir=./logs5
-```
 
 ### Model Exploration
 Use `explore_model.ipynb` for:
@@ -293,44 +246,3 @@ Use `explore_model.ipynb` for:
 - Model architecture exploration
 - Training data inspection
 - Inference testing
-
-### API Testing
-```bash
-curl -X POST "http://localhost:8000/generate" \
-  -H "Content-Type: application/json" \
-  -d '{"description": "ocean blues", "temperature": 0.2}'
-```
-
-## 📊 Dataset Statistics
-
-- **Total Samples**: 50,000 color palettes
-- **Color Styles**: 6 different harmony algorithms
-- **Labeling**: GPT-4o generated descriptions
-- **Format**: JSON with 4 hex colors per palette
-- **Quality**: Human-readable theme descriptions
-
-## 🔒 Security & Privacy
-
-- **API Keys**: Stored in environment variables
-- **CORS**: Configured for Chrome extension access
-- **Data**: No user data stored or transmitted
-- **Local Processing**: All inference happens locally
-
-## 🚀 Future Enhancements
-
-1. **Model Improvements**:
-   - Larger base models (Gemma 7B, 70B)
-   - Multi-modal input (image + text)
-   - Style transfer capabilities
-
-2. **Extension Features**:
-   - Theme persistence across sessions
-   - Custom color palette import
-   - Batch theme application
-   - Theme sharing and export
-
-3. **API Enhancements**:
-   - Authentication and rate limiting
-   - Batch processing endpoints
-   - Model versioning
-   - A/B testing support
